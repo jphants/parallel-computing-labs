@@ -1,50 +1,63 @@
 #include <iostream>
+#include <vector>
 #include <chrono>
+#include <fstream>
 
 using namespace std;
 
-#define MAX 100
+void row_major_access(const vector<vector<double>>& A, int N, ofstream &csv_file) {
+    auto start = chrono::high_resolution_clock::now();
+    
+    for (int i = 0; i < N; i++) {  
+        for (int j = 0; j < N; j++) {  
+            volatile double temp = A[i][j]; // Evitar optimización del compilador
+        }  
+    }
 
-double A[MAX][MAX], x[MAX], y[MAX];
+    auto end = chrono::high_resolution_clock::now();
+    chrono::duration<double> elapsed = end - start;
+    cout << "N = " << N << " | Row-major: " << elapsed.count() << " s" << endl;
+    
+    csv_file << N << "," << elapsed.count() << ",";
+}
+
+void column_major_access(const vector<vector<double>>& A, int N, ofstream &csv_file) {
+    auto start = chrono::high_resolution_clock::now();
+    
+    for (int j = 0; j < N; j++) {  
+        for (int i = 0; i < N; i++) {  
+            volatile double temp = A[i][j]; // Evitar optimización del compilador
+        }  
+    }
+
+    auto end = chrono::high_resolution_clock::now();
+    chrono::duration<double> elapsed = end - start;
+    cout << "N = " << N << " | Column-major: " << elapsed.count() << " s" << endl;
+    
+    csv_file << elapsed.count() << endl;
+}
 
 int main() {
-    for (int i = 0; i < MAX; i++) {
-        x[i] = i + 1;
-        y[i] = 0;
-        for (int j = 0; j < MAX; j++) {
-            A[i][j] = (i + j) * 0.5;
+    ofstream csv_file("nested_loops.csv");
+    csv_file << "Dimension,Row-major,Column-major\n"; // Encabezado
+
+    for (int N = 4000; N <= 5000; N += 50) {
+        vector<vector<double>> A(N, vector<double>(N));
+
+        // Llenar la matriz con algunos valores
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                A[i][j] = (i + j) * 0.5;
+            }
         }
+
+        row_major_access(A, N, csv_file);
+        column_major_access(A, N, csv_file);
+        cout << "----------------------\n";
     }
 
-    // Acceso en orden por filas (Row-major)
-    auto start1 = chrono::high_resolution_clock::now();
-    
-    for (int i = 0; i < MAX; i++) {  
-        for (int j = 0; j < MAX; j++) {  
-            y[i] += A[i][j] * x[j];  
-        }  
-    }
-    
-    auto end1 = chrono::high_resolution_clock::now();
-    chrono::duration<double> elapsed1 = end1 - start1;
-    cout << "Tiempo del primer par de bucles (Row-major): " << elapsed1.count() << " segundos\n";
-
-    for (int i = 0; i < MAX; i++) {
-        y[i] = 0;
-    }
-
-    // Acceso en orden por columnas (Column-major)
-    auto start2 = chrono::high_resolution_clock::now();
-    
-    for (int j = 0; j < MAX; j++) {  
-        for (int i = 0; i < MAX; i++) {  
-            y[i] += A[i][j] * x[j];  
-        }  
-    }
-    
-    auto end2 = chrono::high_resolution_clock::now();
-    chrono::duration<double> elapsed2 = end2 - start2;
-    cout << "Tiempo del segundo par de bucles (Column-major): " << elapsed2.count() << " segundos\n";
+    csv_file.close();
+    cout << "Resultados guardados en 'nested_loops.csv'\n";
 
     return 0;
 }

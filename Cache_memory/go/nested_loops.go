@@ -1,47 +1,68 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
+	"os"
 	"time"
 )
 
-const MAX = 100
+func rowMajorAccess(A [][]float64, N int, csvFile *csv.Writer) {
+	start := time.Now()
 
-var A [MAX][MAX]float64
-var x, y [MAX]float64
+	for i := 0; i < N; i++ {
+		for j := 0; j < N; j++ {
+			temp := A[i][j] // Evitar optimización del compilador
+			_ = temp
+		}
+	}
+
+	elapsed := time.Since(start).Seconds()
+	fmt.Printf("N = %d | Row-major: %f s\n", N, elapsed)
+	csvFile.Write([]string{fmt.Sprintf("%d", N), fmt.Sprintf("%f", elapsed)})
+}
+
+func columnMajorAccess(A [][]float64, N int, csvFile *csv.Writer) {
+	start := time.Now()
+
+	for j := 0; j < N; j++ {
+		for i := 0; i < N; i++ {
+			temp := A[i][j] // Evitar optimización del compilador
+			_ = temp
+		}
+	}
+
+	elapsed := time.Since(start).Seconds()
+	fmt.Printf("N = %d | Column-major: %f s\n", N, elapsed)
+	csvFile.Write([]string{"", fmt.Sprintf("%f", elapsed)})
+}
 
 func main() {
-	// Inicializar matrices y vectores
-	for i := 0; i < MAX; i++ {
-		x[i] = float64(i + 1)
-		y[i] = 0
-		for j := 0; j < MAX; j++ {
-			A[i][j] = float64(i+j) * 0.5
+	file, err := os.Create("nested_loops.csv")
+	if err != nil {
+		fmt.Println("Error al crear el archivo CSV:", err)
+		return
+	}
+	defer file.Close()
+
+	csvWriter := csv.NewWriter(file)
+	defer csvWriter.Flush()
+
+	csvWriter.Write([]string{"Dimension", "Row-major", "Column-major"})
+
+	for N := 4000; N <= 5000; N += 50 {
+		A := make([][]float64, N)
+		for i := range A {
+			A[i] = make([]float64, N)
+			for j := range A[i] {
+				A[i][j] = float64(i+j) * 0.5
+			}
 		}
+
+		rowMajorAccess(A, N, csvWriter)
+		columnMajorAccess(A, N, csvWriter)
+		fmt.Println("----------------------")
 	}
 
-	// Acceso en orden por filas (Row-major)
-	start1 := time.Now()
-	for i := 0; i < MAX; i++ {
-		for j := 0; j < MAX; j++ {
-			y[i] += A[i][j] * x[j]
-		}
-	}
-	elapsed1 := time.Since(start1)
-	fmt.Printf("Tiempo del primer par de bucles (Row-major): %v\n", elapsed1)
-
-	// Resetear y
-	for i := 0; i < MAX; i++ {
-		y[i] = 0
-	}
-
-	// Acceso en orden por columnas (Column-major)
-	start2 := time.Now()
-	for j := 0; j < MAX; j++ {
-		for i := 0; i < MAX; i++ {
-			y[i] += A[i][j] * x[j]
-		}
-	}
-	elapsed2 := time.Since(start2)
-	fmt.Printf("Tiempo del segundo par de bucles (Column-major): %v\n", elapsed2)
+	fmt.Println("Resultados guardados en 'nested_loops.csv'")
 }
