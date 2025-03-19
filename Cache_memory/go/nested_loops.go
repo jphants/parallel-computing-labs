@@ -12,7 +12,7 @@ func rowMajorAccess(A [][]float64, N int, csvFile *csv.Writer) {
 
 	for i := 0; i < N; i++ {
 		for j := 0; j < N; j++ {
-			temp := A[i][j] // Evitar optimización del compilador
+			temp := A[i][j]
 			_ = temp
 		}
 	}
@@ -27,7 +27,7 @@ func columnMajorAccess(A [][]float64, N int, csvFile *csv.Writer) {
 
 	for j := 0; j < N; j++ {
 		for i := 0; i < N; i++ {
-			temp := A[i][j] // Evitar optimización del compilador
+			temp := A[i][j]
 			_ = temp
 		}
 	}

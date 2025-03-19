@@ -5,31 +5,40 @@ import (
 	"time"
 )
 
-const MAX = 100
-
-var A, B, C [MAX][MAX]float64
-
-func matrix_classic() {
-	// Inicializar matrices A y B
-	for i := 0; i < MAX; i++ {
-		for j := 0; j < MAX; j++ {
-			A[i][j] = float64(i+j) * 0.5
-			B[i][j] = float64(i-j) * 0.3
-			C[i][j] = 0
-		}
+func multiplyClassic(N int) time.Duration {
+	A := make([][]float64, N)
+	B := make([][]float64, N)
+	C := make([][]float64, N)
+	for i := range A {
+		A[i] = make([]float64, N)
+		B[i] = make([]float64, N)
+		C[i] = make([]float64, N)
 	}
 
-	// Medir tiempo de multiplicación de matrices clásica
+	for i := 0; i < N; i++ {
+		for j := 0; j < N; j++ {
+			A[i][j] = float64(i+j) * 0.5
+			B[i][j] = float64(i-j) * 0.3
+		}
+	}
 	start := time.Now()
 
-	for i := 0; i < MAX; i++ { // Row-major
-		for j := 0; j < MAX; j++ {
-			for k := 0; k < MAX; k++ {
+	for i := 0; i < N; i++ {
+		for j := 0; j < N; j++ {
+			for k := 0; k < N; k++ {
 				C[i][j] += A[i][k] * B[k][j]
 			}
 		}
 	}
 
-	elapsed := time.Since(start)
-	fmt.Printf("Tiempo de multiplicación de matrices clásica: %v\n", elapsed)
+	return time.Since(start)
+}
+
+func main() {
+	dimensions := []int{10, 50, 100, 200, 500}
+
+	for _, N := range dimensions {
+		elapsed := multiplyClassic(N)
+		fmt.Printf("N = %d | Tiempo: %v\n", N, elapsed)
+	}
 }

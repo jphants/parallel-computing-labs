@@ -10,7 +10,7 @@ void row_major_access(const vector<vector<double>>& A, int N, ofstream &csv_file
     
     for (int i = 0; i < N; i++) {  
         for (int j = 0; j < N; j++) {  
-            volatile double temp = A[i][j]; // Evitar optimización del compilador
+            volatile double temp = A[i][j];
         }  
     }
 
@@ -26,7 +26,7 @@ void column_major_access(const vector<vector<double>>& A, int N, ofstream &csv_f
     
     for (int j = 0; j < N; j++) {  
         for (int i = 0; i < N; i++) {  
-            volatile double temp = A[i][j]; // Evitar optimización del compilador
+            volatile double temp = A[i][j];
         }  
     }
 
@@ -39,12 +39,11 @@ void column_major_access(const vector<vector<double>>& A, int N, ofstream &csv_f
 
 int main() {
     ofstream csv_file("nested_loops.csv");
-    csv_file << "Dimension,Row-major,Column-major\n"; // Encabezado
+    csv_file << "Dimension,Row-major,Column-major\n";
 
     for (int N = 4000; N <= 5000; N += 50) {
         vector<vector<double>> A(N, vector<double>(N));
 
-        // Llenar la matriz con algunos valores
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
                 A[i][j] = (i + j) * 0.5;
@@ -53,7 +52,7 @@ int main() {
 
         row_major_access(A, N, csv_file);
         column_major_access(A, N, csv_file);
-        cout << "----------------------\n";
+        cout << "-----------------------------------\n";
     }
 
     csv_file.close();
